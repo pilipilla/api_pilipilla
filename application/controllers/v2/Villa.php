@@ -44,7 +44,7 @@ class Villa extends REST_Controller {
         }
     }
 
-    public function post_index()
+    public function index_post()
     {
         $query = $this->db->query("SELECT kode_villa FROM villa WHERE kode_villa = ?", array($this->post('kode_villa')));
         if($query->num_rows() > 0)
