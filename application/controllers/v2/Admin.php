@@ -167,6 +167,22 @@ class Admin extends REST_Controller {
         }
     }
 
+    public function delete_get($id)
+    {
+        $this->db->where('id', $id);
+        $sukses = $this->db->delete('villa');
+        if($sukses)
+        {
+            $this->set_response(['status' => 200, 'message' => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response([
+                    'status' => 400,
+                    'message' => false
+                ], REST_Controller::HTTP_NOT_FOUND);
+        }
+    }
+
 	public function not_found() {
         $this->set_response([
         'status' => FALSE,
