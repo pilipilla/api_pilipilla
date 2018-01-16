@@ -75,10 +75,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
-	'database' => 'villa',
+	'hostname' => 'mysql.hostinger.co.id',
+	'username' => 'u946394140_admin',
+	'password' => 'apamodikata',
+	'database' => 'u946394140_villa',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
