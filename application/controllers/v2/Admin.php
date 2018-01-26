@@ -46,6 +46,31 @@ class Admin extends REST_Controller {
         }
     }
 
+    public function kategori_admin_get()
+    {
+        $query = $this->db->get('kategori_admin')->result();
+        if($query)
+        {
+            $this->set_response(["status" => 200, "data" => $query, "message" => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response(["status" => 400, "message" => false], REST_Controller::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function delete_admin_get($id)
+    {
+        $this->db->where('id', $id);
+        $sukses = $this->db->delete('admin');
+        if($sukses)
+        {
+            $this->set_response(["status" => 200, "message" => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response(["status" => 400, "message" => false], REST_Controller::HTTP_BAD_REQUEST);
+        }
+    }
+
     public function login_post() {
         $password = $this->post('password');
         $username = $this->post('username');
@@ -64,7 +89,7 @@ class Admin extends REST_Controller {
                 'id_kategori' => $query->id_kat
             );
             $output['id_token'] = JWT::encode($token, "login");
-            $this->set_response(["status" => 200, "data" => $token], REST_Controller::HTTP_OK);
+            $this->set_response(["status" => 200, "data" => $output], REST_Controller::HTTP_OK);
         }
         else
         {
@@ -180,6 +205,251 @@ class Admin extends REST_Controller {
                     'status' => 400,
                     'message' => false
                 ], REST_Controller::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function transaksi_get($status)
+    {
+        $query = $this->db->query("SELECT transaksi.kode_transaksi, transaksi.id, transaksi.nama, transaksi.no_telp, transaksi.email, transaksi.total_harga, transaksi.check_in, transaksi.check_out, transaksi.tgl_transaksi, transaksi.tgl_bayar, transaksi.status, transaksi.a_n, transaksi.from_bank, transaksi.norek, villa.kode_villa, bank.nama_bank 
+        FROM transaksi 
+        JOIN villa ON villa.id = transaksi.id_villa
+        LEFT JOIN bank ON bank.id = transaksi.id_bank
+        WHERE transaksi.status = ? ", array($status))->result();
+        $this->set_response(["status" => 200, "data" => $query, "message" => true], REST_Controller::HTTP_OK);
+    }
+
+    public function change_transaksi_get($id)
+    {
+        $status = $this->get('status');
+        $query = $this->db->get_where('transaksi', ['id' => $id])->row();
+        $data = array(
+            'status' => $status
+        );
+        $this->db->where('id', $id);
+        $sukses = $this->db->update('transaksi', $data);
+        if($sukses)
+        {
+            $this->set_response(['status' => 200, "data" => $query,'message' => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response([
+                'status' => 400,
+                'message' => falses
+            ], REST_Controller::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function transaksi_id_get($id)
+    {
+        $query = $this->db->get_where('transaksi', ['id' => $id])->row();
+        if($query)
+        {
+            $this->set_response(['status' => 200, "data" => $query,'message' => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response([
+                'status' => 400,
+                'message' => false
+            ], REST_Controller::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function change_harga_post()
+    {
+        $data = array(
+            'total_harga' => $this->post('total_harga'),
+            'status' => 1
+        );
+        $this->db->where('id', $this->post('id'));
+        $sukses = $this->db->update('transaksi', $data);
+        if($sukses)
+        {
+            $query = $this->db->get_where('transaksi', ['id' => $this->post('id')])->row();
+            $this->set_response(['status' => 200, 'data' => $query,'message' => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response([
+                'status' => FALSE,
+                'message' => 'Tambah villa gagal'
+            ], REST_Controller::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function slider_get()
+    {
+        $query = $this->db->get('slider')->result();
+        if($query)
+        {
+            $this->set_response(['status' => 200, "data" => $query, "message" => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response(['status' => 400, "message" => false], REST_Controller::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function slider_id_get($id)
+    {
+        $query = $this->db->get_where('slider', ['id' => $id]);
+        if($query)
+        {
+            $this->set_response(['status' => 200, 'data' => $query->row(), 'message' => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response('Tidak ada', REST_Controller::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function add_slider_post()
+    {
+        $data = array(
+            'image' => $this->post('image'),
+            'status' => $this->post('status')
+        );
+        $sukses = $this->db->insert('slider', $data);
+        if($sukses)
+        {
+            $this->set_response(['status' => TRUE, 'message' => 'Tambah villa sukses'], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response([
+                'status' => FALSE,
+                'message' => 'Tambah villa gagal'
+            ], REST_Controller::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function edit_slider_post()
+    {
+        $data = array(
+            'image' => $this->post('image')
+        );
+        $this->db->where('id', $this->post('id'));
+        $sukses = $this->db->update('slider', $data);
+        if($sukses)
+        {
+            $this->set_response(['status' => TRUE, 'message' => 'Tambah villa sukses'], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response([
+                'status' => FALSE,
+                'message' => 'Tambah villa gagal'
+            ], REST_Controller::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function change_status_slider_get($status)
+    {
+        $data = array(
+            'status' => $status
+        );
+        $this->db->where('id', $this->get('id'));
+        $sukses = $this->db->update('slider', $data);
+        if($sukses)
+        {
+            $this->set_response(['status' => TRUE, 'message' => 'Tambah villa sukses'], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response([
+                'status' => FALSE,
+                'message' => 'Tambah villa gagal'
+            ], REST_Controller::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function delete_slider_get($id)
+    {
+        $this->db->where('id', $id);
+        $sukses = $this->db->delete('slider');
+        if($sukses)
+        {
+            $this->set_response(['status' => 200, 'message' => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response([
+                'status' => FALSE,
+                'message' => 'Tambah villa gagal'
+            ], REST_Controller::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function bank_get()
+    {
+        $query = $this->db->get("bank")->result();
+        if($query)
+        {
+            $this->set_response(['status' => 200, 'data' => $query, 'message' => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response(['status' => 400, 'message' => false], REST_Controller::HTTP_BAD_REQUEST);
+        }       
+    }
+
+    public function bank_id_get($id)
+    {
+        $query = $this->db->get_where("bank", ['id' => $id])->row();
+        if($query)
+        {
+            $this->set_response(['status' => 200, 'data' => $query, 'message' => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response(['status' => 400, 'message' => false], REST_Controller::HTTP_BAD_REQUEST);
+        }       
+    }
+
+    public function add_bank_post()
+    {
+        $data = array(
+            'norek' => $this->post('norek'),
+            'an' => $this->post('an'),
+            'nama_bank' => $this->post('nama_bank')
+        );
+        $sukses = $this->db->insert('bank', $data);
+        if($sukses)
+        {
+            $this->set_response(['status' => 200, 'message' => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response([
+                    'status' => FALSE,
+                    'message' => 'Tambah villa gagal'
+                ], REST_Controller::HTTP_NOT_FOUND);
+        }
+    }   
+
+    public function update_bank_post()
+    {
+        $data = array(
+            'norek' => $this->post('norek'),
+            'an' => $this->post('an'),
+            'nama_bank' => $this->post('nama_bank')
+        );
+        $this->db->where('id', $this->post('id'));
+        $sukses = $this->db->update('bank', $data);
+        if($sukses)
+        {
+            $this->set_response(['status' => 200, 'message' => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response([
+                    'status' => 400,
+                    'message' => false
+                ], REST_Controller::HTTP_NOT_FOUND);
+        }
+    }
+
+    public function delete_bank_get($id)
+    {
+        $this->db->where('id', $id);
+        $sukses = $this->db->delete('bank');
+        if($sukses)
+        {
+            $this->set_response(['status' => 200, 'message' => true], REST_Controller::HTTP_OK);
+        }else
+        {
+            $this->set_response([
+                'status' => FALSE,
+                'message' => 'Tambah villa gagal'
+            ], REST_Controller::HTTP_NOT_FOUND);
         }
     }
 
